@@ -1,0 +1,178 @@
+#https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_EC2.html
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cloud Formation Jenkins Template 
+
+Parameters:
+  VpcBlock:
+    Type: String
+    Default: 10.0.0.0/16
+    Description: VPC CIDR Range
+      
+  Subnet01Block:
+    Type: String
+    Default: 10.0.1.0/24
+    Description: CidrBlock for Public Subnet 01 within the VPC.        
+
+  Subnet02Block:
+    Type: String
+    Default: 10.0.2.0/24
+    Description: CidrBlock for Private Subnet 02 within the VPC.
+
+  MyKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: faisal_cld_frmtn_key-uswest1
+    Description: Enter the Name for KeyPair.
+
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Enter the Environment Name.
+
+
+Resources:
+
+  #Creating VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${Environment}-faisalVPC"
+
+  #Creating Internet Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${Environment}-InternetGateway"
+ 
+  # Attaching VPC to Intenet Gateway
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC    
+
+
+
+
+# Public Route Table & Public Subnet & Attaching Them
+
+  # Creating Public Route Table
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC               
+      Tags: 
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${Environment}-PublicRouteTable"
+        - Key: Network
+          Value: Public
+
+  # Adding Public Route & Internet Gateway in Public Route Table
+  Route: 
+    #DependsOn: VPCGatewayAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable  
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      # Tags:
+      #   - Key: Name
+      #     Value: !Sub "${AWS::StackName}-${Environment}-route"
+
+
+  # Creating Public Subnet 
+  Subnet01:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref Subnet01Block
+      MapPublicIpOnLaunch: true 
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${Environment}-Subnet01"    
+      AvailabilityZone: 
+        Fn::Select:
+          - '0'
+          - Fn::GetAZs:
+              Ref: AWS::Region
+
+  # Attaching Public Subnet to Public Route Table      
+  Subnet01RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet01
+      RouteTableId: !Ref PublicRouteTable
+
+
+
+
+# Private Route Table & Private Subnet & Attaching Them
+
+  # Creating Private Route Table
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC               
+      Tags: 
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${Environment}-PrivateRouteTable"
+        - Key: Network
+          Value: Private
+
+  # Creating Private Subnet 
+  Subnet02:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref Subnet02Block 
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${Environment}-Subnet02"    
+      AvailabilityZone: 
+        Fn::Select:
+          - '0'
+          - Fn::GetAZs:
+              Ref: AWS::Region
+
+  # Attaching Public Subnet to Public Route Table      
+  Subnet02RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet02
+      RouteTableId: !Ref PrivateRouteTable
+
+Outputs:
+  VpcId:
+    Description: Vpc Id
+    Value: !Ref VPC
+
+  InternetGateway:
+    Description: Internet Gateway Id
+    Value: !Ref InternetGateway
+
+  PublicRouteTable:
+    Description: Public Route Table Id
+    Value: !Ref PublicRouteTable
+
+  PrivateRouteTable:
+    Description: Private Route Table Id
+    Value: !Ref PrivateRouteTable
+
+  Subnet01Id:
+    Description: Subnet 01 Id
+    Value: !Ref Subnet01
+
+  Subnet02Id:
+    Description: Subnet 02 Id
+    Value: !Ref Subnet02
+
