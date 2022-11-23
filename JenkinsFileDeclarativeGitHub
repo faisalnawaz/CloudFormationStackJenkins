@@ -3,22 +3,15 @@ pipeline{
     agent any
 
     environment {
-        EXIT_CODE = 'nil'
-        UPDTE_CHECK = 'nil'
-    }
-
-    parameters{
-        choice(name: 'CREATE_STACK', choices: ['Yes', 'No'], description: 'Stack Creation Check')
-        choice(name: 'UPDATE_STACK', choices: ['Yes', 'No'], description: 'Stack Update Check')
-        choice(name: 'DELETE_STACK', choices: ['Yes', 'No'], description: 'Stack Delete Check')
-        string(name: 'REGION', defaultValue: 'us-west-1', trim: true, description: 'Specify the Region')
-        string(name: 'STACK_NAME', defaultValue: 'JenkinsFreestyleCloudFormationDeclarative', trim: true, description: 'Specify the Stack name')
-        string(name: 'TEMPLATE_URL', defaultValue: 'file://CloudFormationStack.yml', trim: true, description: 'Specify the Template URL')
-        string(name: 'PARAMETER_LIST', defaultValue: 'ParameterKey=VpcBlock,ParameterValue=10.0.0.0/16 ParameterKey=Subnet01Block,ParameterValue=10.0.1.0/24 ParameterKey=Subnet02Block,ParameterValue=10.0.2.0/24 ParameterKey=Environment,ParameterValue=tst', trim: true, description: 'Specify the Parameter List')
+        EXIT_CODE = ''
+        UPDTE_CHECK = ''
+        STACK_NAME = 'JenkinsFreestyleCloudFormationDeclarative'
+        REGION = 'us-west-1'
+        TEMPLATE_URL = 'https://fsljenkinscloudformation.s3.us-west-1.amazonaws.com/CloudFormationStack.yml'
+        PARAMETER_LIST = "ParameterKey=VpcBlock,ParameterValue=10.0.0.0/16 ParameterKey=Subnet01Block,ParameterValue=10.0.1.0/24 ParameterKey=Subnet02Block,ParameterValue=10.0.2.0/24 ParameterKey=Environment,ParameterValue=dev"    
     }
 
     stages{
-            
         stage("Check Existing Cloud Formation Stack...!"){
             steps{
                 echo "Stage 1"
@@ -27,21 +20,21 @@ pipeline{
                    script: 'aws cloudformation describe-stacks --stack-name "${STACK_NAME}" --region "${REGION}" &> /dev/null',
                    returnStatus: true
                    )
-                  echo "Exit Code: ${EXIT_CODE}"
+                  // echo "Exit Code: ${EXIT_CODE}"
                 }//end of script
             }//end of steps
         }//end of stage 1
 
         stage("Creation of Cloud Formation Stack...!"){
             when {
-                expression { return EXIT_CODE == 254 && CREATE_STACK == 'Yes'}
+                expression { return EXIT_CODE == 254 }
             }
             steps{
                 echo "Stage 2"
                 script {
                     sh (
                         script: 'aws cloudformation create-stack --stack-name "${STACK_NAME}" \
-                                --template-body "${TEMPLATE_URL}" \
+                                --template-url "${TEMPLATE_URL}" \
                                 --region "${REGION}" \
                                 --parameters ${PARAMETER_LIST}',
                         returnStatus: true
@@ -51,9 +44,6 @@ pipeline{
         }//end of stage 2
 
         stage("Update Check...!"){
-            when {
-                expression { return UPDATE_STACK == 'Yes' && EXIT_CODE != 254}
-            }
             steps{
                 echo "Stage 3"
                 script {
@@ -76,7 +66,7 @@ pipeline{
                 script {
                 sh (
                     script: 'aws cloudformation update-stack --stack-name "${STACK_NAME}" \
-                            --template-body "${TEMPLATE_URL}" \
+                            --template-url "${TEMPLATE_URL}" \
                             --region "${REGION}" \
                             --parameters ${PARAMETER_LIST}',
                     returnStatus: true
@@ -85,20 +75,6 @@ pipeline{
             }//end of steps
         }//end of stage 4
 
-        stage("Delete Check...!"){
-            when {
-                expression { return DELETE_STACK == 'Yes' && EXIT_CODE != 254}
-            }
-            steps{
-                echo "Stage 5"
-                script {
-                    sh (
-                    script: 'aws cloudformation delete-stack --stack-name "${STACK_NAME}"',
-                    returnStdout: true
-                    )
-                }//end of script
-            }//end of steps
-        }//end of stage 5
 
 
     }//end of stages
