@@ -8,7 +8,7 @@ pipeline{
         STACK_NAME = 'JenkinsFreestyleCloudFormationDeclarative'
         REGION = 'us-west-1'
         TEMPLATE_URL = 'https://fsljenkinscloudformation.s3.us-west-1.amazonaws.com/CloudFormationStack.yml'
-        PARAMETER_LIST = "ParameterKey=VpcBlock,ParameterValue=10.0.0.0/16 ParameterKey=Subnet01Block,ParameterValue=10.0.1.0/24 ParameterKey=Subnet02Block,ParameterValue=10.0.2.0/24 ParameterKey=Environment,ParameterValue=dev"    
+        PARAMETER_LIST = "ParameterKey=VpcBlock,ParameterValue=10.0.0.0/16 ParameterKey=Subnet01Block,ParameterValue=10.0.1.0/24 ParameterKey=Subnet02Block,ParameterValue=10.0.2.0/24 ParameterKey=Environment,ParameterValue=tst"    
     }
 
     stages{
