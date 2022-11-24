@@ -8,8 +8,8 @@ pipeline{
     }
 
     parameters{
-        choice(name: 'CREATE_STACK', choices: ['Yes', 'No'], description: 'Stack Creation Check')
-        choice(name: 'UPDATE_STACK', choices: ['No', 'Yes'], description: 'Stack Update Check')
+        choice(name: 'CREATE_STACK', choices: ['No', 'Yes'], description: 'Stack Creation Check')
+        choice(name: 'UPDATE_STACK', choices: ['Yes', 'No'], description: 'Stack Update Check')
         choice(name: 'DELETE_STACK', choices: ['No', 'Yes'], description: 'Stack Delete Check')
         string(name: 'REGION', defaultValue: 'us-west-1', trim: true, description: 'Specify the Region')
         string(name: 'STACK_NAME', defaultValue: 'JenkinsFreestyleCloudFormationDeclarative', trim: true, description: 'Specify the Stack name')
