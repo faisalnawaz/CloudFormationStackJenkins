@@ -14,7 +14,7 @@ pipeline{
         string(name: 'REGION', defaultValue: 'us-west-1', trim: true, description: 'Specify the Region')
         string(name: 'STACK_NAME', defaultValue: 'JenkinsFreestyleCloudFormationDeclarative', trim: true, description: 'Specify the Stack name')
         string(name: 'TEMPLATE_URL', defaultValue: 'file://CloudFormationStack.yml', trim: true, description: 'Specify the Template URL')
-        string(name: 'PARAMETER_LIST', defaultValue: 'ParameterKey=VpcBlock,ParameterValue=10.0.0.0/16 ParameterKey=Subnet01Block,ParameterValue=10.0.1.0/24 ParameterKey=Subnet02Block,ParameterValue=10.0.2.0/24 ParameterKey=Environment,ParameterValue=tst', trim: true, description: 'Specify the Parameter List')
+        string(name: 'PARAMETER_LIST', defaultValue: 'ParameterKey=VpcBlock,ParameterValue=10.0.0.0/16 ParameterKey=Subnet01Block,ParameterValue=10.0.1.0/24 ParameterKey=Subnet02Block,ParameterValue=10.0.2.0/24 ParameterKey=Environment,ParameterValue=dev', trim: true, description: 'Specify the Parameter List')
     }
 
     stages{
